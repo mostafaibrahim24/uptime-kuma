@@ -1,0 +1,27 @@
+---
+- name: Deploy Frontend (Uptime-Kuma)
+  hosts: frontend
+  become: yes
+  vars:
+    app_dir: /home/ubuntu/uptime-kuma
+  tasks:
+    - name: Ensure Docker is installed
+      ansible.builtin.include_role:
+        name: community.docker.docker_host
+
+    - name: Install docker-compose if not present
+      ansible.builtin.pip:
+        name: docker-compose
+        executable: pip3
+
+    - name: Clone frontend repo
+      git:
+        repo: 'git@github.com:mostafaibrahim24/uptime-kuma.git'
+        dest: "{{ app_dir }}"
+        version: main
+        force: yes
+
+    - name: Pull and start containers with docker-compose
+      community.docker.docker_compose:
+        project_src: "{{ app_dir }}"
+        state: present

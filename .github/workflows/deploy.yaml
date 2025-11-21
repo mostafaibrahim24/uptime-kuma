@@ -1,0 +1,35 @@
+name: Frontend workflow
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      INVENTORY: ${{ secrets.INVENTORY_INI }}
+      PEM_KEY: ${{ secrets.SERVER_PEM }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python & Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip git
+          pip3 install ansible community.docker
+
+      - name: Save private key
+        run: |
+          echo "${PEM_KEY}" > deploy_key.pem
+          chmod 600 deploy_key.pem
+
+      - name: Save inventory
+        run: |
+          echo "${INVENTORY}" > inventory.ini
+
+      - name: Deploy Frontend
+        run: ansible-playbook -i inventory.ini deploy.yml --private-key deploy_key.pem

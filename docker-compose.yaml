@@ -5,5 +5,4 @@ services:
     volumes:
       - ./data:/app/data
     ports:
-      # <Host Port>:<Container Port>
-      - "3001:3001"
+      - "80:3001"
