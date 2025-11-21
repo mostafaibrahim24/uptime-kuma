@@ -6,22 +6,35 @@
     app_dir: /home/ubuntu/uptime-kuma
   tasks:
     - name: Ensure Docker is installed
-      ansible.builtin.include_role:
-        name: community.docker.docker_host
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+        update_cache: yes
 
-    - name: Install docker-compose if not present
-      ansible.builtin.pip:
+    - name: Ensure Docker service is running
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+
+    - name: Install docker-compose
+      ansible.builtin.apt:
         name: docker-compose
-        executable: pip3
+        state: present
+        update_cache: yes
 
     - name: Clone frontend repo
       git:
-        repo: 'git@github.com:mostafaibrahim24/uptime-kuma.git'
+        repo: 'https://github.com/mostafaibrahim24/uptime-kuma.git'
         dest: "{{ app_dir }}"
-        version: main
+        version: master
         force: yes
-
-    - name: Pull and start containers with docker-compose
-      community.docker.docker_compose:
-        project_src: "{{ app_dir }}"
-        state: present
+    - name: Building..
+      ansible.builtin.command:
+        cmd: echo Building...
+    - name: Run docker-compose up
+      ansible.builtin.command:
+        cmd: docker-compose -f docker-compose.yaml up -d
+      args:
+        chdir: "{{ app_dir }}"
